@@ -1,0 +1,45 @@
+import { useEffect, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { loadStripe } from "@stripe/stripe-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
+
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+);
+
+export default function Home() {
+  const [videoUrl, setVideoUrl] = useState("");
+
+  useEffect(() => {
+    supabase.storage
+      .from("videos")
+      .getPublicUrl("sample.mp4")
+      .then(({ data }) => setVideoUrl(data.publicUrl));
+  }, []);
+
+  const checkout = async (priceId, mode) => {
+    const stripe = await stripePromise;
+    await stripe.redirectToCheckout({
+      lineItems: [{ price: priceId, quantity: 1 }],
+      mode,
+      successUrl: window.location.href,
+      cancelUrl: window.location.href,
+    });
+  };
+
+  return (
+    <div>
+      <h1>Bienvenido a Tulock</h1>
+      {videoUrl && (
+        <video width="600" controls>
+          <source src={videoUrl} type="video/mp4" />
+          Tu navegador no soporta video.
+        </video>
+      )}
+    </div>
+  );
+}
