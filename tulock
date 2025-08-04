@@ -1,0 +1,6 @@
+tulock/
+├─ pages/
+├─ components/
+├─ package.json
+├─ next.config.js   ← opcional
+└─ README.md
